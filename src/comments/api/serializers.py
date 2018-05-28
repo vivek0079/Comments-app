@@ -24,3 +24,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         return static("comments/img/user.jpeg")
+
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Comment
+        fields = ('id', 'image', 'user', 'url', 'content', 'timestamp', 'updated')
+        read_only_fields = ['url']
+        
+    def get_image(self, obj):
+        return static("comments/img/user.jpeg")

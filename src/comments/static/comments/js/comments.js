@@ -1,7 +1,27 @@
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 $(document).ready(function () {
     var endpoint = "http://127.0.0.1:8000/api/comments/"
     var Url = $(".load-comments").attr("data-url")
-    $(".load-comments").before("<h3>Comments</h3><br><div class='form-container'></div>")
+    var isUser = false
+    var authUser;
+
+    $(".load-comments").before("<h1 class='text-center' style='font-size:50px;'>Comments</h1><br><div class='form-container'></div>")
 
     getComments(Url)
 
@@ -14,12 +34,19 @@ $(document).ready(function () {
         }
         var timeStamp = new Date(object.timestamp).toLocaleString()
         var html = "<div class='media'; style='border-bottom:1px solid #ccc';>" + image +"<div class='media-body'>" +  
-                    object.content + "<br>" + authorName + 
-                    "<small> on " + timeStamp + "</small>"
-                    "</div></div><hr>"
+                    "<p class='comment-content' data-id='" + object.id + "'>" + object.content + "</p>" + authorName + 
+                    "<small> on " + timeStamp 
+        if (object.user){
+            if(object.user.username == authUser){
+                html = html + " | <a href='#' class='edit-button'>Edit</a>"
+            }
+        }
+        html += "</small></div></div>"
         return html
     }
     function getComments(Url){
+        isUser = $.parseJSON(getCookie('isUser'))
+        authUser = String(getCookie('authUser'))
         $(".load-comments").html('')
         $.ajax({
             method: "GET",
@@ -44,7 +71,14 @@ $(document).ready(function () {
     }
 
     function commentForm(){
-        var html = "<form method='POST' class='comment-form'><textarea placeholder='Comment here...' name='content' class='form-control'></textarea><br><input type='submit' class='btn btn-lg btn-success' value='Submit'></form><br> "
+        var html = ""
+        if(isUser){
+            html = "<form method='POST' class='comment-form'><textarea placeholder='Comment here...' name='content' class='form-control'></textarea><br><input type='submit' class='btn btn-lg btn-success' value='Submit'></form><br> "
+
+        }
+        else{
+            html = "<div style='font-size:large;padding:20px;'><strong>Login required to comment</strong></div>"
+        }
         return html
     }
 
@@ -65,7 +99,10 @@ $(document).ready(function () {
             method: "POST",
             data: data + "&url=" + Url,
             success: function(data){
-                getComments(Url)
+                // getComments(Url)
+                $(".load-comments").append(renderComment(data))
+                var form = commentForm()
+                $(".form-container").html(form)
             },
             error: function(data){
                 console.log('error')
@@ -85,5 +122,75 @@ $(document).ready(function () {
         var data = $(this).serialize()
         handleForm(data)
     })
+
+    $(document).on('click', '.edit-button', function(e){
+        e.preventDefault()
+        $(this).fadeOut()
+        var contentHolder = $(this).parent().parent().find('.comment-content')
+        var content = contentHolder.text()
+        var Id = contentHolder.attr('data-id')
+        $(this).after(commentEditForm(Id, content))
+
+    })
+
+    $(document).on('submit', '.comment-edit-form', function (e) {
+        e.preventDefault()
+        var data = $(this).serialize()
+        var Id = $(this).attr('data-id')
+        handleEditForm(data, Id)
+    })
+
+    function commentEditForm(Id, content) {
+        var html = "<form method='POST' class='comment-edit-form' data-id='" + Id + "'>" +
+            "<hr><textarea placeholder='Comment here...' name='content' class='form-control'>" +
+            content + "</textarea><br><input type='submit' class='btn btn-lg btn-success' value='Edit'>" +
+            "<button class='btn btn-lg btn-danger comment-delete' style='margin-left:10px'>Delete</button>" + 
+            "<button class='btn btn-lg btn-primary comment-cancel' style='margin-left:10px'>Cancel</button>" + 
+            "</form>"
+        return html
+    }
+
+    $(document).on('click', '.comment-cancel', function (e) {
+        $(this).parent().parent().find('.edit-button').fadeIn();
+        $(this).parent().remove()   
+    })
+
+
+    $(document).on('click', '.comment-delete', function(e){
+        e.preventDefault()
+        var Id = $(this).parent().attr('data-id')
+        $.ajax({
+            url: endpoint + Id + "/",
+            method: "DELETE",
+            success: function(){
+                getComments(Url)
+            },
+            error: function(){
+                console.log('error')
+            }
+        })
+    })
+
+    function handleEditForm(data, Id) {
+        $.ajax({
+            url: endpoint + Id + "/",
+            method: "PUT",
+            data: data,
+            success: function (data) {
+                getComments(Url)
+            },
+            error: function (data) {
+                console.log('error')
+                console.log(data.responseJSON)
+                var error = $('.alert-error')
+                if (error.length > 0) {
+                    error.remove()
+                }
+                var msg = formatMsg(data.responseJSON)
+                $('[data-id='+Id+'] textarea').before(msg)
+            }
+        })
+    }
+
 
 })
