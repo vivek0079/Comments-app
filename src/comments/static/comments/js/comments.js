@@ -16,12 +16,12 @@ function getCookie(name) {
 
 
 $(document).ready(function () {
-    var endpoint = "http://127.0.0.1:8000/api/comments/"
+    var endpoint = "/api/comments/"
     var Url = $(".load-comments").attr("data-url")
     var isUser = false
     var authUser;
 
-    $(".load-comments").before("<h1 class='text-center' style='font-size:50px;'>Comments</h1><br><div class='form-container'></div>")
+    $(".load-comments").before("<h1 class='text-center' style='font-size:50px;'>Comments</h1><h3 class='text-center' style='font-size:30px;'>A Reusable comments app</h3><br><div class='form-container'></div>")
 
     getComments(Url)
 
@@ -143,10 +143,10 @@ $(document).ready(function () {
     function commentEditForm(Id, content) {
         var html = "<form method='POST' class='comment-edit-form' data-id='" + Id + "'>" +
             "<hr><textarea placeholder='Comment here...' name='content' class='form-control'>" +
-            content + "</textarea><br><input type='submit' class='btn btn-lg btn-success' value='Edit'>" +
-            "<button class='btn btn-lg btn-danger comment-delete' style='margin-left:10px'>Delete</button>" + 
-            "<button class='btn btn-lg btn-primary comment-cancel' style='margin-left:10px'>Cancel</button>" + 
-            "</form>"
+            content + "</textarea><br><input type='submit' class='btn btn-success' value='Edit'>" +
+            "<button class='btn btn-danger comment-delete' style='margin-left:10px'>Delete</button>" + 
+            "<button class='btn btn-primary comment-cancel' style='margin-left:10px'>Cancel</button>" + 
+            "</form><br>"
         return html
     }
 
