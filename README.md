@@ -1,4 +1,6 @@
+================
 # Comments-app
+================
 
 A reusable comments app that can be used to implement comments in nay of your URL feed.This can alsso be directly uploaded into Pypi to make it more availble to the public by using `pip install <your-app-name>`
 
@@ -14,7 +16,7 @@ __Technology Stack:__
 
 _Front-end:_ &nbsp;&nbsp;Bootstrap 3, jQuery (JavaScript)
 
-_Back-end:_ &nbsp;&nbsp;Django1.11 (Python3.5.2)
+_Back-end:_ &nbsp;&nbsp;Django 1.11 , Django REST Framework 3.6.2(Python 3.5.2)
 
 _Database:_ &nbsp;&nbsp;dbsqlite3
 
